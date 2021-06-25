@@ -1,12 +1,12 @@
 # I2C sniffer - RP2040 - PICO
 
-The purpose of this project is to develop a sniffer for the I2C BUS that can capture at 400 KHZ. For 100 Khz, optimizing the code it is possible to use by polling an 8-bit or 32-bit processor, but for 400 Khz it is necessary to react in less than 2 uS, so CPLD or FPGA are required. A middle way is to use the processor [RP2040] (https://www.raspberrypi.org/products/raspberry-pi-pico/) that has the PIO unit that, with its own ASM, executes instructions in one cycle independent of central CPUs.
+The purpose of this project is to develop a sniffer for the I2C BUS that can capture at 400 KHZ. For 100 Khz, optimizing the code it is possible to use by polling an 8-bit or 32-bit processor, but for 400 Khz it is necessary to react in less than 2 uS, so CPLD or FPGA are required. A middle way is to use the processor [RP2040](https://www.raspberrypi.org/products/raspberry-pi-pico/) that has the PIO unit that, with its own ASM, executes instructions in one cycle independent of central CPUs.
 
 ## I2C protocol
 
 A reduction of the i2c working principle could be that there are three conditions to detect: START  DATA and STOP and that when the level of the clock pin (SCL) is high, the transitions of the data pin (SCD) indicate start or stop, but if it remains stable is a valid data bit.
 
-![alt text](images/i2c_data_transfer.png)
+![alt text](images/I2C_data_transfer.png)
 
 ## Principle of operation with the PIO unit
 
@@ -14,7 +14,7 @@ Each PIO has 4 state machines that can be programmed to decode a part of the pro
 
 For example, SM0 runs the program that decodes the START condition and triggers IRQ 7 that SM 3 listens to, which runs the main program that is waiting for the IRQs to PUSH the data in the transmission FIFO.
 
-![alt text](images/block_diagram.png)
+![alt text](images/block_diagram_pio.png)
 
 ### Sniffer data encoding.
 
