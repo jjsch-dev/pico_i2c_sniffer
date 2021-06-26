@@ -16,6 +16,7 @@ pico_sdk_init()
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME} 
     main.c
+    ram_fifo.c
 )
 
 # Create C header file with the name <pio program>.pio.h
@@ -30,6 +31,7 @@ pico_add_extra_outputs(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} 
     pico_stdlib
     hardware_pio
+    pico_multicore
 )
 
 # Enable usb output, disable uart output
