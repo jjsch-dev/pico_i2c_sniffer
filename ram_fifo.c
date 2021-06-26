@@ -12,13 +12,13 @@ static uint32_t capture_get = 0;
 static uint32_t capture_count = 0;
 
 bool ram_fifo_init(size_t count) {
-    capture_buf  = malloc(count);
+    capture_buf  = malloc(count * sizeof(uint32_t));
     capture_count = count;
 
     return  (capture_buf != NULL);
 }
 
-bool ram_fifo_empty(void){
+bool ram_fifo_is_empty(void){
     return (capture_get == capture_set);   
 }
 
