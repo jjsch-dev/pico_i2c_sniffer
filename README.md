@@ -41,3 +41,11 @@ The following video shows the arduino monitor consulting the status, and the ser
 Note: Given the nature of the test, it has not been possible to check for loss of frames or data.
 
 ![](images/i2c_sniff_400khz_10mS_TOF.gif)
+
+### TinyUSB - serial console
+To make the usb port behave like a serial port (CDC) pico uses the TinyUSB library, and with the option pico_enable_stdio_usb ($ {PROJECT_NAME} 1) it is integrated into the output console (printf).
+For this case, the conversions (% c% x% s) add a lot of delay, so it was decided to do the conversion locally by nibbles.
+To further optimize speed, MUTEX and CR and LF conversion were disabled with PUBLIC PICO_STDOUT_MUTEX = 0 PICO_STDIO_ENABLE_CRLF_SUPPORT = 0.
+
+### Led indicator
+The LED is used to indicate that the board has initialized successfully (ON), flashes when there is activity on the i2c bus, and turns off when it detects a RAM overflow.

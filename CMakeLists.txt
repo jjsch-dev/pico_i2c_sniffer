@@ -34,6 +34,8 @@ target_link_libraries(${PROJECT_NAME}
     pico_multicore
 )
 
+target_compile_definitions(${PROJECT_NAME} PUBLIC PICO_STDOUT_MUTEX=0 PICO_STDIO_ENABLE_CRLF_SUPPORT=0)
+
 # Enable usb output, disable uart output
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
