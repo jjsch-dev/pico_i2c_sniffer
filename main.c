@@ -16,9 +16,6 @@
 #include "i2c_sniffer.pio.h"
 #include "pico/multicore.h"
 
-#define RAM_FIFO  
-#undef PICO_QUEUE
-
 #include "ram_fifo.h"
 
 #undef PRINT_VAL
