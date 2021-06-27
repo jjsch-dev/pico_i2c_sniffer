@@ -22,10 +22,9 @@ wait_sda_low:
     jmp wait_sda_high       ;
 
 detected:
-    ;nop
     set pins EV_START       ; Set the event code for START
     
-    irq wait IRQ_EVENT           ; Fire the irq event  
+    irq wait IRQ_EVENT      ; Fire the irq event  
     set pins 0
 
 wait_sda_high:
@@ -45,7 +44,7 @@ wait_sda_low:
 
 detected:
     set pins EV_STOP        ; Set the event code for STOP.
-    irq IRQ_EVENT           ; Fire the irq event  
+    irq wait IRQ_EVENT      ; Fire the irq event  
 
 wait_sda_high:
     wait 0 gpio SDA_PIN     ; 
@@ -59,14 +58,10 @@ wait_sda_high:
 
 .wrap_target
     wait 1 gpio SCL_PIN     ; Wait for the scl pin to go high.
-  ;  jmp pin wait_scl_low   ; If the code is zero, the data bit must be read.
- ;   jmp wait_scl_low
     nop                     ; TODO: analyze why it does not work, without this NOP.
-; test:
     set pins EV_DATA        ; Clear event code.
-    irq wait IRQ_EVENT  
+    irq wait IRQ_EVENT   
     nop                     ; TODO: analyze why it does not work, without this NOP
-wait_scl_low: 
     wait 0 gpio SCL_PIN     ; Wait for the scl pin to go low.
 .wrap
 
@@ -102,6 +97,7 @@ void i2c_start_program_init(PIO pio, uint sm, uint offset, float div) {
 
     // Allow PIO to control GPIO pin (as output)
     pio_gpio_init(pio, EV0_PIN);
+    pio_gpio_init(pio, EV1_PIN);
 
     // Connect EV0 EV1 to SET pins (control with 'set' instruction)
     sm_config_set_set_pins(&c, EV0_PIN, 2);
@@ -114,11 +110,6 @@ void i2c_start_program_init(PIO pio, uint sm, uint offset, float div) {
     pio_sm_set_pins_with_mask(pio, sm, (1<<EV1_PIN) | (1<<EV0_PIN), (1<<EV1_PIN) | (1<<EV0_PIN));
     pio_sm_set_pindirs_with_mask(pio, sm, (1<<EV1_PIN) | (1<<EV0_PIN),
                                           (1<<EV1_PIN) | (1<<EV0_PIN) | (1<<SCL_PIN));
-
-    
-    // Set this pin's GPIO function (connect PIO to the pad)
-    pio_gpio_init(pio, EV0_PIN);
-    pio_gpio_init(pio, EV1_PIN);
 
     // wait GPIO : System GPIO input selected by Index . 
     // This is an absolute GPIO index, and is not affected by the state
@@ -186,12 +177,6 @@ void i2c_data_program_init(PIO pio, uint sm, uint offset, float div) {
     // Set the pin EV0 and EV1 direction to output (in PIO)
     pio_sm_set_consecutive_pindirs(pio, sm, EV0_PIN, 2, true);
     
-    // Connect EV0_PIN to JMP pin to test data condition.
-    sm_config_set_jmp_pin(&c, EV0_PIN);
-    
-    // Set the SCL direction to input (in PIO)
-    pio_sm_set_consecutive_pindirs(pio, sm, EV0_PIN, 1, false);
-
     // wait GPIO : System GPIO input selected by Index . 
     // This is an absolute GPIO index, and is not affected by the state
     // machine’s input IO mapping.
