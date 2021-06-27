@@ -4,7 +4,7 @@ The purpose of this project is to develop a sniffer for the I2C BUS that can cap
 
 ## I2C protocol
 
-A reduction of the i2c working principle could be that there are three conditions to detect: START  DATA and STOP and that when the level of the clock pin (SCL) is high, the transitions of the data pin (SCD) indicate start or stop, but if it remains stable is a valid data bit.
+A reduction of the i2c working principle could be that there are three conditions to detect: START DATA and STOP. And when the level of the clock pin (SCL) is high, the transitions of the data pin (SDA) indicate start or stop, but if it remains stable is a valid data bit.
 
 ![alt text](images/I2C_data_transfer.png)
 
@@ -46,6 +46,9 @@ Note: Given the nature of the test, it has not been possible to check for loss o
 To make the usb port behave like a serial port (CDC) pico uses the TinyUSB library, and with the option pico_enable_stdio_usb ($ {PROJECT_NAME} 1) it is integrated into the output console (printf).
 For this case, the conversions (% c% x% s) add a lot of delay, so it was decided to do the conversion locally by nibbles.
 To further optimize speed, MUTEX and CR and LF conversion were disabled with PUBLIC PICO_STDOUT_MUTEX = 0 PICO_STDIO_ENABLE_CRLF_SUPPORT = 0.
+
+## Print using buffered string
+ When the output is via USB CDC, the data is sent in packets of maximum 64 bytes every 1mS. As the decoding of the i2c frame is composed of more than one event (Start / Stop / Data) that are separated by a few uS, to optimize the output they are stored in buffer waiting for: STOP, the buffer is full, or that elapsed more than 100 uS since the last event.
 
 ### Led indicator
 The LED is used to indicate that the board has initialized successfully (ON), flashes when there is activity on the i2c bus, and turns off when it detects a RAM overflow.
