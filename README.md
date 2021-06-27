@@ -12,11 +12,43 @@ A reduction of the i2c working principle could be that there are three condition
 
 ![alt text](images/I2C_data_transfer.png)
 
-## Principle of operation with the PIO unit
+## PIO-based sniffer working principle
 
-Each PIO has 4 state machines that can be programmed to decode a part of the protocol and use an irq to communicate. 
+Each PIO has 4 state machines that can be programmed to decode a part of the protocol and use an IRQ/WAIT to communicate. 
 
-For example, SM0 runs the program that decodes the START condition and triggers IRQ 7 that SM 3 listens to, which runs the main program that is waiting for the IRQs to PUSH the data in the transmission FIFO.
+For example, SM0 executes the program that decodes the START condition and fire IRQ 7 that SM 3 listens, which executes the main program that is waiting for the IRQ to PUSH the event in the transmit FIFO.
+
+```assembly
+.program i2c_start
+.wrap_target
+wait_sda_low:    
+    wait 0 gpio SDA_PIN     ; Wait for the sda pin to go down.
+    jmp pin detected        ; If the SCL is high, the condition was detected.
+    jmp wait_sda_high       ;
+
+detected:
+    set pins EV_START       ; Set the event code for START
+    
+    irq wait IRQ_EVENT      ; Fire the irq event  
+    set pins 0
+
+wait_sda_high:
+    wait 1 gpio SDA_PIN     ; 
+.wrap
+
+.program i2c_main
+.wrap_target
+wait_irq_event:    
+    wait 1 irq IRQ_EVENT    ; Wait for the irq event.
+    jmp pin send_event      ; If the lsb of the event code is zero, read the data bit.
+    in pins, 1              ; Update the ISR register with the SDA value. 
+    jmp wait_irq_event      ; loads it into the FIFO when it reaches 9 bits.
+
+send_event:
+    mov isr, pins           ; Load the EV1(3), EV0(1), SDA(0). 
+    in NULL, 9              ; The event code starts at bit 11 and ends at 12.
+.wrap
+```
 
 ![alt text](images/block_diagram_pio.png)
 
@@ -77,7 +109,7 @@ Below is an excerpt of the command to get range from the VL530X sensor using the
 
 ### Test scenario 
 
-To test the capture, an arduino nano was used as a host that requests the status of a VL530 TOF every 10 mS on a 400 Khz i2c BUS..
+To test the capture, an arduino nano was used as a master that requests the status of a VL530 TOF every 10 mS on a 400 Khz i2c BUS..
 
 ![alt text](images/test_device.png)
 
