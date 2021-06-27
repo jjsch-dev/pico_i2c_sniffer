@@ -26,6 +26,9 @@
 const uint led_pin = 25;
 bool ram_fifo_overflow = false;
 
+static char ascii_buff[64];
+static uint32_t ascii_index = 0;
+
 /*! \brief Converts a nibble to hexadecimal ascii..
  *  \ingroup main
  *
@@ -33,7 +36,7 @@ bool ram_fifo_overflow = false;
  *
  * \return char (0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F).
  */
-inline char nibble_to_hex( uint8_t nibble ) {
+static inline char nibble_to_hex( uint8_t nibble ) {
     nibble &= 0x0F;
   
     if (nibble > 9) {
@@ -41,6 +44,41 @@ inline char nibble_to_hex( uint8_t nibble ) {
     }
 
     return( nibble + '0' );
+}
+
+/*! \brief Print the buffered string.
+ *  \ingroup main
+ *
+ * If the string buffer contains data, it sends it through the serial port.
+ *
+ * \param count quantity of items for FIFO
+ * @return true if there is enough dynamic memory, false otherwise
+ */
+void buff_print( void ) {
+    if (ascii_index > 0) {
+        ascii_buff[ascii_index] = '\0';
+        printf(ascii_buff); 
+        ascii_index = 0;
+    }
+}
+
+/*! \brief Insert a char in the buffered string.
+ *  \ingroup main
+ *
+ * When the output is via USB CDC, the data is sent in packets of maximum 64 bytes every 1mS. 
+ * As the decoding of the i2c frame is composed of more than one event (Start / Stop / Data) 
+ * that are separated by a few uS, to optimize they are stored in buffer waiting for STOP, 
+ * that the buffer is full, or that elapsed. more than 100 uS since the last event.
+ *
+ * \param c char
+ */
+static inline void buff_putchar(char c) {
+    // Reserve one byte for the NULL character.
+    if (ascii_index >= sizeof(ascii_buff)-1) {
+        buff_print();
+    } 
+
+    ascii_buff[ascii_index++] = c;
 }
 
 /*! \brief Decode and print the captured events.
@@ -51,8 +89,7 @@ inline char nibble_to_hex( uint8_t nibble ) {
  * \return void.
  */
 void core1_print() {
-char data_ascii[10];
-
+    uint32_t val;
 #ifdef PRINT_HEX_INDEX
     uint32_t capture_index = 0;
 #endif
@@ -62,42 +99,47 @@ char data_ascii[10];
     // Blocks the CPU waiting for FIFO captures from the core 0.
     while (true)
     {
-        uint32_t val = multicore_fifo_pop_blocking();
-        
-        gpio_put(led_pin, false);
-        
-        // The format of the uint32_t returned by the sniffer is composed of two event
-        // code bits (EV1 = Bit12, EV0 = Bit11), and when it comes to data, the nine least
-        // significant bits correspond to (ACK = Bit0), and the value 8 bits
-        // where (B0 = Bit1 and B7 = Bit8).
-        uint32_t ev_code = (val >> 10) & 0x03;
-        uint8_t  data = ((val >> 1) & 0xFF);
-        bool ack = (val & 1) ? false : true;
+        // It waits for the arrival of a new event for 100 uS, if it comes out due to timeout 
+        // and there is a string stored in the buffer, it sends it.
+        if( !multicore_fifo_pop_timeout_us(100, &val) ) {
+            buff_print();
+        } else {
+            gpio_put(led_pin, false);
+            
+            // The format of the uint32_t returned by the sniffer is composed of two event
+            // code bits (EV1 = Bit12, EV0 = Bit11), and when it comes to data, the nine least
+            // significant bits correspond to (ACK = Bit0), and the value 8 bits
+            // where (B0 = Bit1 and B7 = Bit8).
+            uint32_t ev_code = (val >> 10) & 0x03;
+            uint8_t  data = ((val >> 1) & 0xFF);
+            bool ack = (val & 1) ? false : true;
 
 #ifdef PRINT_VAL
-        printf("val: %x, ev_code: %x, data:%x, ack: %d \r\n", val, ev_code, data, ack);
+            printf("val: %x, ev_code: %x, data:%x, ack: %d \r\n", val, ev_code, data, ack);
 #else
-        if (ev_code == EV_START) {
+            if (ev_code == EV_START) {
 #if defined(PRINT_TIME_T)
-            printf("%010lu ", time_us_32());
+                printf("%010lu ", time_us_32());
 #elif defined(PRINT_HEX_INDEX)
-            printf("%08x ", capture_index++);
+                printf("%08x ", capture_index++);
 #endif
-            printf("s");
-        } else if (ev_code == EV_STOP) {
-            printf("o\r\n");
-        } else if (ev_code == EV_DATA) {
-             data_ascii[0] = nibble_to_hex(data>>4);
-             data_ascii[1] = nibble_to_hex(data);
-             data_ascii[2] = ack ? 'a' : 'n';
-             data_ascii[3] = '\0';
-             printf(data_ascii);
-        } else {
-            putchar('u');
-        }
+                buff_putchar('s');
+            } else if (ev_code == EV_STOP) {
+                buff_putchar('o');
+                buff_putchar('\r');
+                buff_putchar('\n');
+                buff_print();
+            } else if (ev_code == EV_DATA) {
+                buff_putchar(nibble_to_hex(data>>4));
+                buff_putchar(nibble_to_hex(data));
+                buff_putchar(ack ? 'a' : 'n');
+            } else {
+                buff_putchar('u');
+            }
 #endif
-        if (!ram_fifo_overflow) {
-            gpio_put(led_pin, true);
+            if (!ram_fifo_overflow) {
+                gpio_put(led_pin, true);
+            }
         }
     }
 }
@@ -159,7 +201,7 @@ int main()
         if (new_val) {
             capture_val = pio_sm_get(pio, sm_main);
         }
-        // NOTE: activates a flag when it detects that if RAM FIFO overflows
+        // NOTE: activates a flag when it detects that RAM FIFO overflows
         if (multicore_fifo_wready()) {
             if (!ram_fifo_is_empty()) {
                 if (new_val) {
