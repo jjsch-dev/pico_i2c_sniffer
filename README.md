@@ -18,6 +18,10 @@ Each PIO has 4 state machines that can be programmed to decode a part of the pro
 
 For example, SM0 executes the program that decodes the START condition and fire IRQ 7 that SM 3 listens, which executes the main program that is waiting for the IRQ to PUSH the event in the transmit FIFO.
 
+![alt text](images/block_diagram_pio.png)
+
+Excerpt from the code of the START and MAIN state machine.
+
 ```assembly
 .program i2c_start
 .wrap_target
@@ -49,8 +53,6 @@ send_event:
     in NULL, 9              ; The event code starts at bit 11 and ends at 12.
 .wrap
 ```
-
-![alt text](images/block_diagram_pio.png)
 
 ### Sniffer data encoding.
 
