@@ -54,9 +54,9 @@ send_event:
 .wrap
 ```
 
-### Sniffer data encoding.
+### Coding of sniffer events
 
-When the main state machine inserts data into the FIFO, it encodes it as follows: the least significant nines are reserved for the address or data that is made up of 8 bits plus the ack / nack, and bits 11 and 12 encode the code event.
+When the main state machine inserts a 32-bit event into the FIFO, it uses the following format: the least significant nines are reserved for the address or data that is made up of 8 bits plus the ack/nack, and the 11th bits and 12 encode the event code.
 
 ![alt text](images/fifo_encode_format.png)
 
