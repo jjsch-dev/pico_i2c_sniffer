@@ -1,6 +1,10 @@
 # I2C sniffer - RP2040 - PICO
 
-The purpose of this project is to develop a sniffer for the I2C BUS that can capture at 400 KHZ. For 100 Khz, optimizing the code it is possible to use by polling an 8-bit or 32-bit processor, but for 400 Khz it is necessary to react in less than 2 uS, so CPLD or FPGA are required. A middle way is to use the processor [RP2040](https://www.raspberrypi.org/products/raspberry-pi-pico/) that has the PIO unit that, with its own ASM, executes instructions in one cycle independent of central CPUs.
+The purpose of this project is to develop a sniffer for the I2C BUS that can capture at 400 KHZ. 
+
+For 100 Khz, it is possible to use for example an AVR8 processor, but for 400 Khz it is necessary to react in less than 2 uS, so CPLD or FPGA are required. 
+
+An intermediate way is to use the processor [RP2040](https://www.raspberrypi.org/products/raspberry-pi-pico/) that has a PIO unit that  executes instructions in one cycle independent of central CPUs. The operating speed of the PIO can reach 125 Mhz.
 
 ## I2C protocol
 
