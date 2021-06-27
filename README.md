@@ -31,11 +31,15 @@ NOTE: the bus is 3.3V logic.
 ![alt text](images/sniffer_diagram.png)
 
 ## Firmware description
+
 Although each state machine has an 8-level fifo, it was decided to take advantage of the fact that the pico has two CPUs, and dedicate CORE0 to wait for the i2c events from the main state machine and communicate them to CORE1 through the multicore fifo of 8 levels; so that it decodes them and sends them through the USB serial port to a console.
 
 To increase the level of FIFOs, one was implemented in RAM (40K events) controlled by CORE0 for buffering when the multicore FIFO is full.
 
+![alt text](images/firmware_cores.png)
+
 ## Ascii event encoding
+
 The ascii output is a succession of events in the sequence in which they were detected by the sniffer. It must be assumed that the slave address is the one immediately after the START event, and that after the 8 bits encoded in ascii the ack / nack bit continues. 
 To improve readability, a CR LF is added each time the STOP condition is detected.
 
@@ -67,8 +71,6 @@ Below is an excerpt of the command to get range from the VL530X sensor using the
     s53a00no    -   answer = 00
 
 
-![alt text](images/firmware_cores.png)
-
 ### Test scenario 
 
 To test the capture, an arduino nano was used as a host that requests the status of a VL530 TOF every 10 mS on a 400 Khz i2c BUS..
@@ -76,18 +78,22 @@ To test the capture, an arduino nano was used as a host that requests the status
 ![alt text](images/test_device.png)
 
 ### Preliminary results
+
 The following video shows the arduino monitor consulting the status, and the serial console that sends the result of the sniff of the i2c bus.
 Note: Given the nature of the test, it has not been possible to check for loss of frames or data.
 
 ![](images/i2c_sniff_400khz_10mS_TOF.gif)
 
 ### TinyUSB - serial console
+
 To make the usb port behave like a serial port (CDC) pico uses the TinyUSB library, and with the option pico_enable_stdio_usb ($ {PROJECT_NAME} 1) it is integrated into the output console (printf).
 For this case, the conversions (% c% x% s) add a lot of delay, so it was decided to do the conversion locally by nibbles.
 To further optimize speed, MUTEX and CR and LF conversion were disabled with PUBLIC PICO_STDOUT_MUTEX = 0 PICO_STDIO_ENABLE_CRLF_SUPPORT = 0.
 
 ## Print using buffered string
- When the output is via USB CDC, the data is sent in packets of maximum 64 bytes every 1mS. As the decoding of the i2c frame is composed of more than one event (Start / Stop / Data) that are separated by a few uS, to optimize the output they are stored in buffer waiting for: STOP, the buffer is full, or that elapsed more than 100 uS since the last event.
+
+When the output is via USB CDC, the data is sent in packets of maximum 64 bytes every 1mS. As the decoding of the i2c frame is composed of more than one event (Start / Stop / Data) that are separated by a few uS, to optimize the output they are stored in buffer waiting for: STOP, the buffer is full, or that elapsed more than 100 uS since the last event.
 
 ### Led indicator
+
 The LED is used to indicate that the board has initialized successfully (ON), flashes when there is activity on the i2c bus, and turns off when it detects a RAM overflow.
