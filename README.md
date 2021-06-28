@@ -130,7 +130,7 @@ To make the usb port behave like a serial port (CDC) pico uses the TinyUSB libra
 
 For this case, the print conversions (% c% x% s) add a lot of delay, so it was decided to do the conversion locally by nibbles.
 
-```assembly
+```c
 static inline char nibble_to_hex( uint8_t nibble ) {
     nibble &= 0x0F;
   
