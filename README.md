@@ -107,6 +107,10 @@ Below is an excerpt of the command to get range from the VL530X sensor using the
     s53a00np    -   answer = 00
 
 
+### Download the firmware in Raspberry Pi Pico
+
+Hold down the BOOTSEL button while plugging the board into USB. The uf2 file [i2c_sniffer_pio.uf2](https://github.com/jjsch-dev/pico_i2c_sniffer/blob/master/bin/i2c_sniffer_pio.uf2) should then be copied to the USB mass storage device that appears. Once programming of the new firmware is complete the device will automatically reset and be ready for use.
+
 ### Test scenario 
 
 To test the capture, an arduino nano was used as a master that requests the status of a VL530 TOF every 10 mS on a 400 Khz i2c BUS..
