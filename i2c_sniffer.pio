@@ -23,9 +23,7 @@ wait_sda_low:
 
 detected:
     set pins EV_START       ; Set the event code for START
-    
     irq wait IRQ_EVENT      ; Fire the irq event  
-    set pins 0
 
 wait_sda_high:
     wait 1 gpio SDA_PIN     ; 
