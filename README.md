@@ -2,13 +2,13 @@
 
 The purpose of this project is to develop a sniffer for the I2C BUS that can capture at 400 KHZ. 
 
-For 100 Khz, it is possible to use for example an AVR8 processor, but for 400 Khz it is necessary to react in less than 2 uS, so CPLD or FPGA are required. 
+For 100 Khz, it is possible to use bit-banding (IRQ or Polling) with an 8/32 bit processor, for example an AVR8, but since for 400 Khz it is necessary to react in less than 1.5 uS, a CPLD or FPGA is required. 
 
 An intermediate way is to use the processor [RP2040](https://www.raspberrypi.org/products/raspberry-pi-pico/) that has a PIO unit that  executes instructions in one cycle independent of central CPUs. The operating speed of the PIO can reach 125 Mhz.
 
 ## I2C protocol
 
-A reduction of the i2c working principle could be that there are three conditions to detect: START DATA and STOP. And when the level of the clock pin (SCL) is high, the transitions of the data pin (SDA) indicate start or stop, but if it remains stable is a valid data bit.
+A simplification of the i2c working principle could be that there are three conditions to detect: START DATA and STOP. And when the clock pin level (SCL) is high, the data pin transitions (SDA) indicate start or stop, but if (SDA) remains stable then it is a valid data bit.
 
 ![alt text](images/I2C_data_transfer.png)
 
@@ -80,7 +80,7 @@ The ascii output is a succession of events in the sequence in which they were de
 To improve readability, a CR LF is added each time the STOP condition is detected.
 
 `s = START CONDITION`
-`o = STOP CONDITION`
+`p = STOP CONDITION`
 `a = ACK DETECTED`
 `n = NAK DETECTED`
 
@@ -88,23 +88,23 @@ Below is an excerpt of the command to get range from the VL530X sensor using the
 
     Capture         Source Code
     -------         -------------
-    s52a13ao    -   readReg(RESULT_INTERRUPT_STATUS)
-    s53a40no    -   status = 40
-    s52a13ao    -   readReg(RESULT_INTERRUPT_STATUS)
-    s53a44no    -   status = 44
-    s52a1Eao    -   readReg16Bit(RESULT_RANGE_STATUS + 10);
-    s53a08a05no -   range = 0805
-    s52a0Ba01ao -   writeReg(SYSTEM_INTERRUPT_CLEAR, 0x01);
-    s52a80a01ao -   writeReg(0x80, 0x01);
-    s52aFFa01ao -   writeReg(0xFF, 0x01);
-    s52a00a00ao -   writeReg(0x00, 0x00);
-    s52a91a3Cao -   writeReg(0x91, stop_variable);
-    s52a00a01ao -   writeReg(0x00, 0x01);
-    s52aFFa00ao -   writeReg(0xFF, 0x00);
-    s52a80a00ao -   writeReg(0x80, 0x00);
-    s52a00a01ao -   writeReg(SYSRANGE_START, 0x01);
-    s52a00ao    -   readReg(SYSRANGE_START)
-    s53a00no    -   answer = 00
+    s52a13ap    -   readReg(RESULT_INTERRUPT_STATUS)
+    s53a40np    -   status = 40
+    s52a13ap    -   readReg(RESULT_INTERRUPT_STATUS)
+    s53a44np    -   status = 44
+    s52a1Eap    -   readReg16Bit(RESULT_RANGE_STATUS + 10);
+    s53a08a05np -   range = 0805
+    s52a0Ba01ap -   writeReg(SYSTEM_INTERRUPT_CLEAR, 0x01);
+    s52a80a01ap -   writeReg(0x80, 0x01);
+    s52aFFa01ap -   writeReg(0xFF, 0x01);
+    s52a00a00ap -   writeReg(0x00, 0x00);
+    s52a91a3Cap -   writeReg(0x91, stop_variable);
+    s52a00a01ap -   writeReg(0x00, 0x01);
+    s52aFFa00ap -   writeReg(0xFF, 0x00);
+    s52a80a00ap -   writeReg(0x80, 0x00);
+    s52a00a01ap -   writeReg(SYSRANGE_START, 0x01);
+    s52a00ap    -   readReg(SYSRANGE_START)
+    s53a00np    -   answer = 00
 
 
 ### Test scenario 

@@ -125,7 +125,7 @@ void core1_print() {
 #endif
                 buff_putchar('s');
             } else if (ev_code == EV_STOP) {
-                buff_putchar('o');
+                buff_putchar('p');
                 buff_putchar('\r');
                 buff_putchar('\n');
                 buff_print();
