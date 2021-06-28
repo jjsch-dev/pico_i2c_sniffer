@@ -167,7 +167,7 @@ int main()
 
     uint sm_data = pio_claim_unused_sm(pio, true);
     uint offset_data = pio_add_program(pio, &i2c_data_program);
-    i2c_stop_program_init(pio, sm_data, offset_data, div);
+    i2c_data_program_init(pio, sm_data, offset_data, div);
 
     uint sm_start = pio_claim_unused_sm(pio, true);
     uint offset_start = pio_add_program(pio, &i2c_start_program);
