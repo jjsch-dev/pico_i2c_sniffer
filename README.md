@@ -60,7 +60,7 @@ When the main state machine inserts a 32-bit event into the FIFO, it uses the fo
 
 ### Connection diagram
 
-The sniffer connection to the I2C bus is as follows: the SDA line connects to the GPIO, the SCL line to the GPIO3 and the GND is shared.
+The sniffer connection to the I2C bus is as follows: the SDA line connects to the GPIO0, the SCL line to the GPIO3 and the GND is shared.
 
 NOTE: the bus is 3.3V logic.
 
