@@ -68,7 +68,7 @@ NOTE: the bus is 3.3V logic.
 
 ## Firmware description
 
-Although each state machine has an 8-level fifo, it was decided to take advantage of the fact that the pico has two CPUs, and dedicate CORE0 to wait for the i2c events from the main state machine and communicate them to CORE1 through the multicore fifo of 8 levels; so that it decodes them and sends them through the USB serial port to a console.
+Although each state machine has an 8-level FIFO, for frames composed of more than 8 digits it is not enough, so it was decided to take advantage of the fact that the PICO has two CPUs, and dedicate CORE0 to wait for the i2c events of the main state machine and send them to CORE1 through the 8-level multicore FIFO to be decoded and sent through the USB serial port to a console on a PC.
 
 To increase the level of FIFOs, one was implemented in RAM (40K events) controlled by CORE0 for buffering when the multicore FIFO is full.
 
@@ -127,7 +127,21 @@ Note: Given the nature of the test, it has not been possible to check for loss o
 ### TinyUSB - serial console
 
 To make the usb port behave like a serial port (CDC) pico uses the TinyUSB library, and with the option pico_enable_stdio_usb ($ {PROJECT_NAME} 1) it is integrated into the output console (printf).
-For this case, the conversions (% c% x% s) add a lot of delay, so it was decided to do the conversion locally by nibbles.
+
+For this case, the print conversions (% c% x% s) add a lot of delay, so it was decided to do the conversion locally by nibbles.
+
+```assembly
+static inline char nibble_to_hex( uint8_t nibble ) {
+    nibble &= 0x0F;
+  
+    if (nibble > 9) {
+        nibble += 'A' - '0' - 10;
+    }
+
+    return( nibble + '0' );
+}
+```
+
 To further optimize speed, MUTEX and CR and LF conversion were disabled with PUBLIC PICO_STDOUT_MUTEX = 0 PICO_STDIO_ENABLE_CRLF_SUPPORT = 0.
 
 ## Print using buffered string
