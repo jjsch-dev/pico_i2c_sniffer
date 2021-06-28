@@ -14,9 +14,9 @@ A simplification of the i2c working principle could be that there are three cond
 
 ## PIO-based sniffer working principle
 
-Each PIO has 4 state machines that can be programmed to decode a part of the protocol and use an IRQ/WAIT to communicate. 
+Each PIO has 4 state machines that can be programmed to decode a part of the protocol and using an IRQ / WAIT scheme plus two GPIOs communicate the event.
 
-For example, SM0 executes the program that decodes the START condition and fire IRQ 7 that SM 3 listens, which executes the main program that is waiting for the IRQ to PUSH the event in the transmit FIFO.
+For example, SM0 executes the program that decodes the START condition and sets the two auxiliary pins with the event code (0x01) and triggers IRQ 7 that SM3 listens, which executes the main program that is waiting for the IRQ to PUSH the event in the transmit FIFO.
 
 ![alt text](images/block_diagram_pio.png)
 
