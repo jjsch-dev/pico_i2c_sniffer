@@ -36,7 +36,7 @@ static uint32_t ascii_index = 0;
  *
  * \return char (0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F).
  */
-static inline char nibble_to_hex( uint8_t nibble ) {
+static inline char nibble_to_hex(uint8_t nibble) {
     nibble &= 0x0F;
   
     if (nibble > 9) {
@@ -54,7 +54,7 @@ static inline char nibble_to_hex( uint8_t nibble ) {
  * \param count quantity of items for FIFO
  * @return true if there is enough dynamic memory, false otherwise
  */
-void buff_print( void ) {
+static inline void buff_print(void) {
     if (ascii_index > 0) {
         ascii_buff[ascii_index] = '\0';
         printf(ascii_buff); 
@@ -97,11 +97,10 @@ void core1_print() {
     printf("i2c sniffer pico initialiced!\r\n");
 
     // Blocks the CPU waiting for FIFO captures from the core 0.
-    while (true)
-    {
+    while (true) {
         // It waits for the arrival of a new event for 100 uS, if it comes out due to timeout 
         // and there is a string stored in the buffer, it sends it.
-        if( !multicore_fifo_pop_timeout_us(100, &val) ) {
+        if (!multicore_fifo_pop_timeout_us(100, &val)) {
             buff_print();
         } else {
             gpio_put(led_pin, false);
@@ -113,7 +112,6 @@ void core1_print() {
             uint32_t ev_code = (val >> 10) & 0x03;
             uint8_t  data = ((val >> 1) & 0xFF);
             bool ack = (val & 1) ? false : true;
-
 #ifdef PRINT_VAL
             printf("val: %x, ev_code: %x, data:%x, ack: %d \r\n", val, ev_code, data, ack);
 #else
