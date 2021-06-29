@@ -1,8 +1,9 @@
-.define PUBLIC SDA_PIN     0
-.define PUBLIC EV0_PIN     1
-.define PUBLIC EV1_PIN     2
-.define PUBLIC SCL_PIN     3
-.define PUBLIC IRQ_EVENT   7
+.define PUBLIC SDA_PIN     0    ; Input for i2c data.
+.define PUBLIC EV0_PIN     1    ; Input/Output for bit 0 of event code.
+.define PUBLIC EV1_PIN     2    ; Input/Output for bit 1 of event code.
+.define PUBLIC SCL_PIN     3    ; Input for i2c clock.
+
+.define PUBLIC IRQ_EVENT   7    
 
 ; two pins are used to communicate the event code. 
 ; To use the JMP pin, the lsb event bit is turned off to indicate data.
@@ -55,10 +56,10 @@ wait_sda_high:
 ; and check if it stayed in the data when the SCL rise up.
 
 .wrap_target
-    wait 1 gpio SCL_PIN     ; Wait for the scl pin to go high.
+    wait 1 gpio SCL_PIN     ; Wait for the SCL pin to go high.
     set pins EV_DATA        ; Clear event code.
-    irq wait IRQ_EVENT   
-    wait 0 gpio SCL_PIN     ; Wait for the scl pin to go low.
+    irq wait IRQ_EVENT      ; Fire the irq event 
+    wait 0 gpio SCL_PIN     ; Wait for the SCL pin to go low.
 .wrap
 
 .program i2c_main

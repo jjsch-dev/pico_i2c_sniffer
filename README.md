@@ -39,7 +39,6 @@ wait_sda_high:
 .wrap
 
 .program i2c_data
-
 .wrap_target
     wait 1 gpio SCL_PIN     ; Wait for the scl pin to go high.
     set pins EV_DATA        ; Clear event code.
@@ -168,6 +167,25 @@ To further optimize speed, MUTEX and CR and LF conversion were disabled with PUB
 ## Print using buffered string
 
 When the output is via USB CDC, the data is sent in packets of maximum 64 bytes every 1mS. As the decoding of the i2c frame is composed of more than one event (Start / Stop / Data) that are separated by a few uS, to optimize the output they are stored in buffer waiting for: STOP, the buffer is full, or that elapsed more than 100 uS since the last event.
+
+```c
+void buff_print( void ) {
+    if (ascii_index > 0) {
+        ascii_buff[ascii_index] = '\0';
+        printf(ascii_buff); 
+        ascii_index = 0;
+    }
+}
+
+static inline void buff_putchar(char c) {
+    // Reserve one byte for the NULL character.
+    if (ascii_index >= sizeof(ascii_buff)-1) {
+        buff_print();
+    } 
+
+    ascii_buff[ascii_index++] = c;
+}
+```
 
 ### Led indicator
 

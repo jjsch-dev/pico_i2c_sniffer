@@ -4,9 +4,9 @@
  * (C) Juan Schiavoni 2021
  *
  * It is composed of 4 state machines that communicate through an IRQ and 
- * two auxiliary pins. Three of them decode the START / STOP / DATA condition, 
- * and the last one serializes the events into a single FIFO; and reads the value 
- * of the 8-bit data plus the ACK.
+ * two auxiliary pins to encode the event. Three of them decode the 
+ * START/STOP/DATA condition, and the last one serializes the events into 
+ * a single FIFO; and reads the value of the 8-bit data plus the ACK.
  */
 #include <stdio.h>
 #include "pico/stdlib.h"
@@ -212,11 +212,9 @@ int main()
                 capture_val = ram_fifo_get();
                 new_val = true;
             } 
-            
             if (new_val) {
                 multicore_fifo_push_blocking(capture_val);
             }
-            
         } else if (new_val) {
             if (!ram_fifo_set(capture_val)) {
                 ram_fifo_overflow = true;
