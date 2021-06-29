@@ -20,7 +20,7 @@ For example, SM0 executes the program that decodes the START condition and sets 
 
 ![alt text](images/block_diagram_pio.png)
 
-Excerpt from the code of the START and MAIN state machine.
+Excerpt from the code of the START DATA and MAIN state machine.
 
 ```assembly
 .program i2c_start
@@ -38,6 +38,15 @@ wait_sda_high:
     wait 1 gpio SDA_PIN     ; 
 .wrap
 
+.program i2c_data
+
+.wrap_target
+    wait 1 gpio SCL_PIN     ; Wait for the scl pin to go high.
+    set pins EV_DATA        ; Clear event code.
+    irq wait IRQ_EVENT   
+    wait 0 gpio SCL_PIN     ; Wait for the scl pin to go low.
+.wrap
+
 .program i2c_main
 .wrap_target
 wait_irq_event:    
@@ -51,6 +60,18 @@ send_event:
     in NULL, 9              ; The event code starts at bit 11 and ends at 12.
 .wrap
 ```
+### Pin sequence to encode the event
+
+    GPIO    Channel       Signal
+    ---- ------------  -------------
+    0   - 1 (Yellow)  - SDA
+    3   - 2 (Blue)    - SCL
+    1   - 3 (Violet)  - EV0
+    2   - 4 (Green)   - EV1
+
+In the graph below, you can see how the state machines (START/STOP/DATA) encode the event code before calling IRQ7 using the EV pins. When it detects the START condition it sets EV0 high and EV1 low, when it detects DATA put EV0 and EV1 in low, and for STOP condition put EV0 and EV1 in high.     
+
+![alt text](images/tek_sda_scl_ev0_ev1.png)
 
 ### Coding of sniffer events
 
