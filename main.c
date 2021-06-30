@@ -68,7 +68,7 @@ static inline void buff_print(void) {
  * When the output is via USB CDC, the data is sent in packets of maximum 64 bytes every 1mS. 
  * As the decoding of the i2c frame is composed of more than one event (Start / Stop / Data) 
  * that are separated by a few uS, to optimize they are stored in buffer waiting for STOP, 
- * that the buffer is full, or that elapsed. more than 100 uS since the last event.
+ * that the buffer is full, or that elapsed more than 100 uS since the last event.
  *
  * \param c char
  */
